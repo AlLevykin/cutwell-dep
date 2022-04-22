@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 	"path"
@@ -13,52 +14,45 @@ type Links interface {
 }
 
 type Router struct {
-	*http.ServeMux
+	*chi.Mux
 	ls Links
 }
 
 func NewRouter(ls Links) *Router {
 	r := &Router{
-		ServeMux: http.NewServeMux(),
-		ls:       ls,
+		Mux: chi.NewRouter(),
+		ls:  ls,
 	}
-	r.HandleFunc("/", r.SwitchHandlers)
+	r.Get("/{key}", r.Redirect)
+	r.Post("/", r.CreateShortLink)
 	return r
-}
-
-func (r *Router) SwitchHandlers(w http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodGet:
-		r.Redirect(w, req)
-	case http.MethodPost:
-		r.CreateShortLink(w, req)
-	default:
-		http.Error(w, "bad request", http.StatusBadRequest)
-	}
 }
 
 func (r *Router) Redirect(w http.ResponseWriter, req *http.Request) {
 	key := path.Base(req.URL.Path)
 	lnk, err := r.ls.Get(req.Context(), key)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	http.Redirect(w, req, lnk, http.StatusTemporaryRedirect)
+	w.WriteHeader(http.StatusTemporaryRedirect)
+	w.Write([]byte(lnk))
 }
 
 func (r *Router) CreateShortLink(w http.ResponseWriter, req *http.Request) {
 	buf, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	link := string(buf)
 	key, err := r.ls.Create(req.Context(), link)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
+	w.Header().Set("content-type", "text/plain; charset=utf-8")
+	w.WriteHeader(http.StatusCreated)
 	w.Write([]byte(key))
 }
