@@ -21,7 +21,7 @@ func ServeApp(ctx context.Context, wg *sync.WaitGroup, srv *server.Server) {
 func main() {
 	ctx, cancel := signal.NotifyContext(context.Background(), os.Interrupt)
 
-	ls := store.NewLinkStore()
+	ls := store.NewLinkStore(9)
 	r := handler.NewRouter(ls)
 	cfg := server.Config{
 		Addr:              ":8080",
