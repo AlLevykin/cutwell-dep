@@ -41,7 +41,7 @@ func (r *Router) Redirect(w http.ResponseWriter, req *http.Request) {
 	key := path.Base(req.URL.Path)
 	lnk, err := r.ls.Get(req.Context(), key)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	http.Redirect(w, req, lnk, http.StatusTemporaryRedirect)
@@ -50,14 +50,14 @@ func (r *Router) Redirect(w http.ResponseWriter, req *http.Request) {
 func (r *Router) CreateShortLink(w http.ResponseWriter, req *http.Request) {
 	buf, err := io.ReadAll(req.Body)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
 	link := string(buf)
 	key, err := r.ls.Create(req.Context(), link)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 	w.Write([]byte(key))
