@@ -9,12 +9,14 @@ import (
 
 type LinkStore struct {
 	sync.Mutex
-	storage map[string]string
+	storage   map[string]string
+	keyLength int
 }
 
-func NewLinkStore() *LinkStore {
+func NewLinkStore(kl int) *LinkStore {
 	return &LinkStore{
-		storage: make(map[string]string),
+		storage:   make(map[string]string),
+		keyLength: kl,
 	}
 }
 
@@ -28,7 +30,7 @@ func (ls *LinkStore) Create(ctx context.Context, lnk string) (string, error) {
 	default:
 	}
 
-	key := utils.RandStringRunes(9)
+	key := utils.RandString(ls.keyLength)
 	ls.storage[key] = lnk
 	return key, nil
 }
