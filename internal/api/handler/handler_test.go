@@ -31,7 +31,7 @@ func TestRouter_CreateShortLink(t *testing.T) {
 				9,
 			},
 			want{
-				code:        http.StatusOK,
+				code:        http.StatusCreated,
 				contentType: "text/plain; charset=utf-8",
 				contentLen:  9,
 			},
