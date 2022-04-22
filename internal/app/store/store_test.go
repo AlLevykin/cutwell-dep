@@ -48,8 +48,8 @@ func TestLinkStore_Create(t *testing.T) {
 				ctx = context.Background()
 			}
 			ls := &LinkStore{
-				storage:   tt.fields.storage,
-				keyLength: tt.fields.keyLen,
+				Storage:   tt.fields.storage,
+				KeyLength: tt.fields.keyLen,
 			}
 			got, err := ls.Create(ctx, tt.args.lnk)
 			if (err != nil) != tt.wantErr {
@@ -111,7 +111,7 @@ func TestLinkStore_Get(t *testing.T) {
 				ctx = context.Background()
 			}
 			ls := &LinkStore{
-				storage: tt.fields.storage,
+				Storage: tt.fields.storage,
 			}
 			got, err := ls.Get(ctx, tt.args.key)
 			if (err != nil) != tt.wantErr {
@@ -135,8 +135,8 @@ func TestNewLinkStore(t *testing.T) {
 			"ok",
 			9,
 			&LinkStore{
-				storage:   make(map[string]string),
-				keyLength: 9,
+				Storage:   make(map[string]string),
+				KeyLength: 9,
 			},
 		},
 	}

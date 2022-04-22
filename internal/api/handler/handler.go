@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"github.com/go-chi/chi/v5"
 	"io"
 	"net/http"
 	"path"
@@ -13,28 +14,18 @@ type Links interface {
 }
 
 type Router struct {
-	*http.ServeMux
+	*chi.Mux
 	ls Links
 }
 
 func NewRouter(ls Links) *Router {
 	r := &Router{
-		ServeMux: http.NewServeMux(),
-		ls:       ls,
+		Mux: chi.NewRouter(),
+		ls:  ls,
 	}
-	r.HandleFunc("/", r.SwitchHandlers)
+	r.Get("/{key}", r.Redirect)
+	r.Post("/", r.CreateShortLink)
 	return r
-}
-
-func (r *Router) SwitchHandlers(w http.ResponseWriter, req *http.Request) {
-	switch req.Method {
-	case http.MethodGet:
-		r.Redirect(w, req)
-	case http.MethodPost:
-		r.CreateShortLink(w, req)
-	default:
-		http.Error(w, "bad request", http.StatusBadRequest)
-	}
 }
 
 func (r *Router) Redirect(w http.ResponseWriter, req *http.Request) {
@@ -44,7 +35,6 @@ func (r *Router) Redirect(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
-	//http.Redirect(w, req, lnk, http.StatusTemporaryRedirect)
 	w.WriteHeader(http.StatusTemporaryRedirect)
 	w.Write([]byte(lnk))
 }
